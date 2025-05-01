@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "port": 22,
+    "ip": "10.20.40.253",
+    "username": "shaunak",
+    "password": "Mind@123"
+  },
+  {
+    "id": 2,
+    "port": 22,
+    "ip": "10.20.40.123",
+    "username": "jay",
+    "password": "Mind@123"
+  },
+  {
+    "id": 3,
+    "port": 22,
+    "ip": "10.20.40.252",
+    "username": "purvik",
+    "password": "Mind@123"
+  }
+]
