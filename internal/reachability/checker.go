@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"ssh-plugin/internal/crypto"
 	"sync"
 	"time"
 
@@ -41,7 +42,12 @@ func CheckAll(devices []models.DiscoveryDevice, timeout time.Duration, concurren
 			}
 
 			// Write the result to stdout immediately and flush
-			fmt.Println(string(outputJSON))
+			encryptedOutput, err := crypto.Encrypt(outputJSON)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error encrypting output: %v\n", err)
+				continue
+			}
+			fmt.Println(encryptedOutput)
 			os.Stdout.Sync() // Force flush stdout
 		}
 	}()

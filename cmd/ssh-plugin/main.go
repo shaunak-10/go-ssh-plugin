@@ -7,12 +7,19 @@ import (
 	"io"
 	"os"
 	"ssh-plugin/internal/config"
+	"ssh-plugin/internal/crypto"
 	"ssh-plugin/internal/metrics"
 	"ssh-plugin/internal/models"
 	"ssh-plugin/internal/reachability"
 )
 
 func main() {
+
+	// Load encryption key
+	if err := crypto.LoadKeyFromFile("/home/shaunak/IdeaProjects/http-server/src/main/java/org/example/plugin_executable/go_config.json"); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to load encryption key: %v\n", err)
+		os.Exit(1)
+	}
 	// Set up panic recovery for the main goroutine
 	defer func() {
 		if r := recover(); r != nil {
@@ -29,9 +36,15 @@ func main() {
 	}
 
 	// Read input data from stdin
-	inputData, err := io.ReadAll(os.Stdin)
+	encryptedInput, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading input: %v\n", err)
+		os.Exit(1)
+	}
+
+	inputData, err := crypto.Decrypt(string(encryptedInput))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error decrypting input: %v\n", err)
 		os.Exit(1)
 	}
 
