@@ -1,4 +1,4 @@
-// cmd/ssh-plugin/main.go
+// main.go
 package main
 
 import (
@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-
 	"ssh-plugin/internal/config"
 	"ssh-plugin/internal/metrics"
 	"ssh-plugin/internal/models"
@@ -14,54 +13,54 @@ import (
 )
 
 func main() {
-	// Parse command line arguments
+	// Set up panic recovery for the main goroutine
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Fprintf(os.Stderr, "Recovered from panic in main: %v\n", r)
+			os.Exit(1)
+		}
+	}()
+
+	// Parse configuration
 	cfg, err := config.ParseArgs(os.Args)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing arguments: %v\n", err)
 		os.Exit(1)
 	}
 
-	// Read input from stdin
-	inputBytes, err := io.ReadAll(os.Stdin)
+	// Read input data from stdin
+	inputData, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading input: %v\n", err)
 		os.Exit(1)
 	}
 
 	// Process based on mode
-	var result interface{}
 	switch cfg.Mode {
 	case config.ModeReachability:
+		// Parse devices for reachability check
 		var devices []models.DiscoveryDevice
-		if err := json.Unmarshal(inputBytes, &devices); err != nil {
-			fmt.Fprintf(os.Stderr, "Error parsing JSON for discovery devices: %v\n", err)
+		if err := json.Unmarshal(inputData, &devices); err != nil {
+			fmt.Fprintf(os.Stderr, "Error parsing input JSON: %v\n", err)
 			os.Exit(1)
 		}
-		result = reachability.CheckAll(devices, cfg.Timeout, cfg.Concurrency)
+
+		// Run reachability checks
+		reachability.CheckAll(devices, cfg.Timeout, cfg.Concurrency)
 
 	case config.ModeMetrics:
+		// Parse devices for metrics collection
 		var devices []models.ProvisionDevice
-		if err := json.Unmarshal(inputBytes, &devices); err != nil {
-			fmt.Fprintf(os.Stderr, "Error parsing JSON for provision devices: %v\n", err)
+		if err := json.Unmarshal(inputData, &devices); err != nil {
+			fmt.Fprintf(os.Stderr, "Error parsing input JSON: %v\n", err)
 			os.Exit(1)
 		}
-		result = metrics.CollectAll(devices, cfg.Timeout, cfg.Concurrency)
+
+		// Collect metrics
+		metrics.CollectAll(devices, cfg.Timeout, cfg.Concurrency)
 
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown mode: %s\n", cfg.Mode)
 		os.Exit(1)
 	}
-
-	// Output the result as JSON
-	outputJSON(result)
-}
-
-// outputJSON marshals and prints the result to stdout
-func outputJSON(data interface{}) {
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error encoding JSON: %v\n", err)
-		os.Exit(1)
-	}
-	fmt.Println(string(jsonData))
 }

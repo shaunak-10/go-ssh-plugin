@@ -21,8 +21,9 @@ type ProvisionDevice struct {
 
 // ReachabilityResult represents the output for SSH reachability check
 type ReachabilityResult struct {
-	DiscoveryID int  `json:"id"`
-	Reachable   bool `json:"reachable"`
+	DiscoveryID int    `json:"id"`
+	Reachable   bool   `json:"reachable"`
+	Error       string `json:"error,omitempty"` // Added error field for error reporting
 }
 
 // MetricsResult represents the output for metrics polling
@@ -31,4 +32,5 @@ type MetricsResult struct {
 	CPU         string `json:"cpu"`
 	Memory      string `json:"memory"`
 	DiskUsage   string `json:"disk-usage"`
+	Error       string `json:"error,omitempty"` // Added error field for error reporting
 }
