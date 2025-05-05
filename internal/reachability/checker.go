@@ -1,9 +1,9 @@
-// internal/reachability/checker.go
 package reachability
 
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"ssh-plugin/internal/crypto"
 	"sync"
@@ -37,18 +37,21 @@ func CheckAll(devices []models.DiscoveryDevice, timeout time.Duration, concurren
 			// Convert result to JSON and print to stdout
 			outputJSON, err := json.Marshal(result)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error marshaling result: %v\n", err)
+				log.Printf("Error marshaling result: %v\n", err)
 				continue
 			}
 
 			// Write the result to stdout immediately and flush
 			encryptedOutput, err := crypto.Encrypt(outputJSON)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error encrypting output: %v\n", err)
+				log.Printf("Error encrypting output: %v\n", err)
 				continue
 			}
 			fmt.Println(encryptedOutput)
-			os.Stdout.Sync() // Force flush stdout
+			err = os.Stdout.Sync()
+			if err != nil {
+				log.Printf("Error syncing output: %v\n", err)
+			} // Force flush stdout
 		}
 	}()
 
@@ -65,7 +68,7 @@ func CheckAll(devices []models.DiscoveryDevice, timeout time.Duration, concurren
 			// Recover from any panics that might occur during processing
 			defer func() {
 				if r := recover(); r != nil {
-					fmt.Fprintf(os.Stderr, "Recovered from panic processing device %d (%s): %v\n",
+					log.Printf("Recovered from panic processing device %d (%s): %v\n",
 						device.DiscoveryID, device.IP, r)
 
 					// Send a failure result for this device

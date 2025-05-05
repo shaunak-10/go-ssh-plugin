@@ -1,4 +1,3 @@
-// internal/models/models.go
 package models
 
 // DiscoveryDevice represents a device for SSH reachability check

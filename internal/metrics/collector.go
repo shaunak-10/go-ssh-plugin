@@ -1,9 +1,9 @@
-// internal/metrics/collector.go
 package metrics
 
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"ssh-plugin/internal/crypto"
 	"strings"
@@ -45,18 +45,21 @@ func CollectAll(devices []models.ProvisionDevice, timeout time.Duration, concurr
 			// Convert result to JSON and print to stdout
 			outputJSON, err := json.Marshal(result)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error marshaling result: %v\n", err)
+				log.Printf("Error marshaling result: %v\n", err)
 				continue
 			}
 
 			// Write the result to stdout immediately and flush
 			encryptedOutput, err := crypto.Encrypt(outputJSON)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error encrypting output: %v\n", err)
+				log.Printf("Error encrypting output: %v\n", err)
 				continue
 			}
 			fmt.Println(encryptedOutput)
-			os.Stdout.Sync() // Force flush stdout
+			err = os.Stdout.Sync()
+			if err != nil {
+				log.Printf("Error syncing stdout: %v\n", err)
+			} // Force flush stdout
 		}
 	}()
 
@@ -73,7 +76,7 @@ func CollectAll(devices []models.ProvisionDevice, timeout time.Duration, concurr
 			// Recover from any panics that might occur during processing
 			defer func() {
 				if r := recover(); r != nil {
-					fmt.Fprintf(os.Stderr, "Recovered from panic processing device %d (%s): %v\n",
+					log.Printf("Recovered from panic processing device %d (%s): %v\n",
 						device.ProvisionID, device.IP, r)
 
 					// Send a failure result for this device

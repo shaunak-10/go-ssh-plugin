@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"log"
 	"time"
 )
 
@@ -20,10 +21,17 @@ type Config struct {
 
 // ParseArgs parses command line arguments and returns a Config
 func ParseArgs(args []string) (*Config, error) {
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Panic while parsing args: %v", r)
+		}
+	}()
+
 	if len(args) < 2 {
 		return &Config{
 			Mode:        ModeReachability,
-			Timeout:     5 * time.Second,
+			Timeout:     3 * time.Second,
 			Concurrency: 10,
 		}, nil
 	}

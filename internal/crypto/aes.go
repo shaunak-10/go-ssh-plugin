@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"log"
 	"os"
 )
 
@@ -18,7 +19,13 @@ func LoadKeyFromFile(path string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Printf("Error closing file: %v\n", err)
+		}
+	}(file)
 
 	var config struct {
 		Secret string `json:"encryption_secret"`
@@ -37,6 +44,13 @@ func LoadKeyFromFile(path string) error {
 }
 
 func Encrypt(plainText []byte) (string, error) {
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Recovered from panic in Encrypt: %v\n", r)
+		}
+	}()
+
 	block, err := aes.NewCipher(secretKey)
 	if err != nil {
 		return "", err
@@ -57,6 +71,13 @@ func Encrypt(plainText []byte) (string, error) {
 }
 
 func Decrypt(base64Cipher string) ([]byte, error) {
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Recovered from panic in Decrypt: %v\n", r)
+		}
+	}()
+
 	data, err := base64.StdEncoding.DecodeString(base64Cipher)
 	if err != nil {
 		return nil, err
