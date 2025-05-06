@@ -28,8 +28,8 @@ type ReachabilityResult struct {
 // MetricsResult represents the output for metrics polling
 type MetricsResult struct {
 	ProvisionID int    `json:"id"`
-	CPU         string `json:"cpu"`
-	Memory      string `json:"memory"`
-	DiskUsage   string `json:"disk-usage"`
+	CPU         string `json:"cpu.usage"`
+	Memory      string `json:"memory.usage"`
+	DiskUsage   string `json:"disk.usage"`
 	Error       string `json:"error,omitempty"` // Added error field for error reporting
 }
