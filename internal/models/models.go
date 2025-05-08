@@ -7,6 +7,7 @@ type DiscoveryDevice struct {
 	Port        int    `json:"port"`
 	Username    string `json:"username"`
 	Password    string `json:"password"`
+	SystemType  string `json:"system.type"`
 }
 
 // ProvisionDevice represents a device for metrics collection
@@ -16,6 +17,7 @@ type ProvisionDevice struct {
 	Port        int    `json:"port"`
 	Username    string `json:"username"`
 	Password    string `json:"password"`
+	SystemType  string `json:"system.type"`
 }
 
 // ReachabilityResult represents the output for SSH reachability check

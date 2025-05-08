@@ -90,6 +90,18 @@ func CollectAll(devices []models.ProvisionDevice, timeout time.Duration, concurr
 				}
 			}()
 
+			if device.SystemType != "linux" {
+				resultsChan <- models.MetricsResult{
+					ProvisionID: device.ProvisionID,
+					CPU:         "ERROR",
+					Memory:      "ERROR",
+					DiskUsage:   "ERROR",
+					Error:       "Unsupported system type",
+				}
+
+				return
+			}
+
 			// Acquire a token from the semaphore
 			semaphore <- struct{}{}
 

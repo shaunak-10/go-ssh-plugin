@@ -80,6 +80,16 @@ func CheckAll(devices []models.DiscoveryDevice, timeout time.Duration, concurren
 				}
 			}()
 
+			if device.SystemType != "linux" {
+				resultsChan <- models.ReachabilityResult{
+					DiscoveryID: device.DiscoveryID,
+					Reachable:   false,
+					Error:       "Unsupported system type",
+				}
+
+				return
+			}
+
 			// Acquire a token from the semaphore
 			semaphore <- struct{}{}
 
